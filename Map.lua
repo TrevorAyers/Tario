@@ -15,6 +15,7 @@ MUSHROOM_TOP = 10
 MUSHROOM_BOTTOM = 11
 
 JUMP_BLOCK = 5
+JUMP_BLOCK_HIT = 9
 
 
 local SCROLL_SPEED = 62
@@ -22,7 +23,6 @@ local SCROLL_SPEED = 62
 function Map:init()
     --Where is the spritesheet located?
     self.spritesheet = love.graphics.newImage('graphics/spritesheet.png')
-    self.tileSprites = generateQuads(self.spritesheet, self.tileWidth, self.tileHeight)
     --How large are the tiles (in pixels)?
     self.tileWidth = 16
     self.tileHeight = 16
@@ -32,14 +32,15 @@ function Map:init()
     self.tiles = {}
 
     self.camX = 0
-    self.camY = 0
+    self.camY = -3
 
+    self.tileSprites = generateQuads(self.spritesheet, self.tileWidth, self.tileHeight)
 
     self.mapWidthPixels = self.mapWidth * self.tileWidth
     self.mapHeightPixels = self.mapHeight * self.tileHeight
 
     --Fill map with empty tiles
-    for y = 1, self.mapHeight / 2 do
+    for y = 1, self.mapHeight do
         for x = 1, self.mapWidth do
             self:setTile(x, y, TILE_EMPTY)
         end
@@ -94,10 +95,10 @@ function Map:init()
                 self:setTile(x, y, TILE_BRICK)
             end
 
-            --chanse to create a block for Mario to hit
+            --chance to create a block for Mario to hit
 
             if math.random(15) == 1 then
-                self.setTile(x, self.mapHeight / 2 - 4, JUMP_BLOCK)
+                self:setTile(x, self.mapHeight / 2 - 4, JUMP_BLOCK)
             end
 
             --next vertical scan line
@@ -133,23 +134,25 @@ function Map:update(dt)
     end
 end
 
-
-function Map:render()
-    --Need to review Render section
-    for y = 1, self.mapHeight do
-        for x = 1, self.mapWidth do
-            love.graphics.draw(self.spritesheet, self.tileSprites[self:getTile(x, y)],
-                (x - 1) * self.tileWidth, (y - 1) * self.tileHeight)
-        end
-    end
-end
-
+--Funky formula here is to read in 2D data from a 1D map array
+--Parenthetical bit is simply used as a line counter
 function Map:setTile(x, y, tile)
-    --Funky formula here is to read in 2D data from a 1D map array
-    --Parenthetical bit is simply used as a line counter
     self.tiles[(y - 1) * self.mapWidth + x] = tile
 end
 
 function Map:getTile(x, y)
     return self.tiles[(y - 1) * self.mapWidth + x]
+end
+
+function Map:render()
+    --Need to review Render section
+    for y = 1, self.mapHeight do
+        for x = 1, self.mapWidth do
+            local tile = self:getTile(x, y)
+            if tile ~= TILE_EMPTY then
+                love.graphics.draw(self.spritesheet, self.tileSprites[tile],
+                    (x - 1) * self.tileWidth, (y - 1) * self.tileHeight)
+            end
+        end
+    end
 end
