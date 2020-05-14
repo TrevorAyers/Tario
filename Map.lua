@@ -1,6 +1,7 @@
 Map = Class{}
 
 require 'Util'
+require 'Player'
 
 TILE_BRICK = 1
 TILE_EMPTY = 4
@@ -30,6 +31,8 @@ function Map:init()
     self.mapWidth = 30
     self.mapHeight = 28
     self.tiles = {}
+
+    self.player = Player(self)
 
     self.camX = 0
     self.camY = -3
@@ -119,19 +122,10 @@ function Map:init()
 end
 
 function Map:update(dt)
-    if love.keyboard.isDown('w') then
-        --Up movement
-        self.camY = math.max(math.floor(self.camY + dt * -SCROLL_SPEED), 0)
-    elseif love.keyboard.isDown('a') then
-        --Left movement
-        self.camX = math.max(math.floor(self.camX + dt * -SCROLL_SPEED), 0)
-    elseif love.keyboard.isDown('s') then
-        --Down movement
-        self.camY = math.min(math.floor(self.camY + dt * SCROLL_SPEED), self.mapHeightPixels - VIRTUAL_HEIGHT)
-    elseif love.keyboard.isDown('d') then
-        --Right movement
-        self.camX = math.min(math.floor(self.camX + dt * SCROLL_SPEED), self.mapWidthPixels - VIRTUAL_WIDTH)
-    end
+    self.camX = math.max(0, 
+        math.min(self.player.x - VIRTUAL_WIDTH / 2,
+            math.min(self.mapWidthPixels - VIRTUAL_WIDTH, self.player.x)))
+    self.player:update(dt)
 end
 
 --Funky formula here is to read in 2D data from a 1D map array
@@ -155,4 +149,6 @@ function Map:render()
             end
         end
     end
+
+    self.player:render()
 end
